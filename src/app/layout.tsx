@@ -1,3 +1,4 @@
+import { icons } from 'lucide-react';
 import './globals.css';
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -5,6 +6,9 @@ import { Toaster } from 'react-hot-toast';
 export const metadata = {
   title: 'Pronto Reserva',
   description: 'Sistema de reservas para o que você quiser',
+  icons: {
+    icon: '/assets/favicon.png',
+  }
 }
 
 export default function RootLayout({

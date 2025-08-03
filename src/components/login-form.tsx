@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useRouter } from "next/navigation"
+import Cookies from "js-cookie"
 import {
   Form,
   FormControl,
@@ -34,6 +36,8 @@ export function LoginForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
+  const router = useRouter()
+
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -42,7 +46,7 @@ export function LoginForm({
   async function onSubmit(data: LoginData) {
   try {
     const res = await login(data)
-    document.cookie = `token=${res.token}; path=/;`
+    Cookies.set('token', res.token, { expires: 1, path: '/' })
     toast.success('Login efetuado com sucesso!')
   } catch (err: any) {
     toast.error(`Falha no login: ${err.message}`)
