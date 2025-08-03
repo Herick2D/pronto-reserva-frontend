@@ -22,6 +22,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form"
+import { login } from '@/services/auth'
 
 const loginSchema = z.object({
   email: z.string().email("Formato de e-mail inválido"),
@@ -39,23 +40,14 @@ export function LoginForm({
   })
 
   async function onSubmit(data: LoginData) {
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-      const body = await res.json()
-
-      if (!res.ok) {
-        throw new Error(body.message || "Credenciais inválidas")
-      }
-
-      toast.success("Login efetuado com sucesso!")
-    } catch (err: any) {
-      toast.error(`Falha no login: ${err.message}`)
-    }
+  try {
+    const res = await login(data)
+    document.cookie = `token=${res.token}; path=/;`
+    toast.success('Login efetuado com sucesso!')
+  } catch (err: any) {
+    toast.error(`Falha no login: ${err.message}`)
   }
+}
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

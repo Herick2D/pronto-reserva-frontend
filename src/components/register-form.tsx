@@ -22,6 +22,7 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form"
+import { register as registerUser } from '@/services/auth'
 
 const registerSchema = z.object({
   email: z.string().email("Formato de e-mail inválido"),
@@ -43,23 +44,18 @@ export default function RegisterForm({ className, ...props }: React.HTMLAttribut
   })
 
   async function onSubmit(data: RegisterData) {
-    try {
-      const res = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      })
-      const body = await res.json()
-
-      if (!res.ok) {
-        throw new Error(body.message || "Erro desconhecido")
-      }
-
-      toast.success("Conta criada com sucesso!")
-    } catch (err: any) {
+  try {
+    const res = await registerUser(data)
+    document.cookie = `token=${res.token}; path=/;`
+    toast.success('Conta criada com sucesso!')
+  } catch (err: any) {
+      const status = err.response?.status
+      if (status === 409) {
+       return toast.error("E-mail já cadastrado.")
+     }
       toast.error(`Falha ao criar conta: ${err.message}`)
     }
-  }
+}
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
