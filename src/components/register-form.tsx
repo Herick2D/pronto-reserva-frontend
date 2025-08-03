@@ -3,6 +3,7 @@
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { toast } from "react-hot-toast"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,17 +15,23 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage,
+} from "@/components/ui/form"
 
 const registerSchema = z.object({
   email: z.string().email("Formato de e-mail inválido"),
   password: z
     .string()
-    .min(8, "A senha deve ter ao menos 8 caracteres")
-    .regex(/[A-Z]/, "Deve conter ao menos uma letra maiúscula")
-    .regex(/[a-z]/, "Deve conter ao menos uma letra minúscula")
-    .regex(/[0-9]/, "Deve conter ao menos um número")
-    .regex(/[^A-Za-z0-9]/, "Deve conter ao menos um caractere especial"),
+    .min(8, "Mínimo 8 caracteres")
+    .regex(/[A-Z]/, "Precisa de uma letra maiúscula")
+    .regex(/[a-z]/, "Precisa de uma letra minúscula")
+    .regex(/[0-9]/, "Precisa de um número")
+    .regex(/[^A-Za-z0-9]/, "Precisa de um caractere especial"),
 })
 
 type RegisterData = z.infer<typeof registerSchema>
@@ -35,8 +42,23 @@ export default function RegisterForm({ className, ...props }: React.HTMLAttribut
     defaultValues: { email: "", password: "" },
   })
 
-  function onSubmit(data: RegisterData) {
-    console.log("Payload válido:", data)
+  async function onSubmit(data: RegisterData) {
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+      const body = await res.json()
+
+      if (!res.ok) {
+        throw new Error(body.message || "Erro desconhecido")
+      }
+
+      toast.success("Conta criada com sucesso!")
+    } catch (err: any) {
+      toast.error(`Falha ao criar conta: ${err.message}`)
+    }
   }
 
   return (
