@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "react-hot-toast"
 import { createReserva } from "@/services/reservas"
 import { SubmitHandler } from "react-hook-form"
+import { convertLocalToUTCString } from "@/utils/date"
 
 const schema = z.object({
   nomeCliente: z.string().min(3, "Nome muito curto"),
@@ -39,7 +40,12 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     try {
-      await createReserva(data)
+      const payloadFinal = {
+        ...data,
+        dataReserva: convertLocalToUTCString(data.dataReserva),
+      };
+
+      await createReserva(payloadFinal)
       toast.success("Reserva criada com sucesso!")
       reset()
       onSuccess()
@@ -97,7 +103,7 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
         />
       </div>
 
-      <Button type="submit" className="w-full bg-primary hover:bg-primary-dark">
+      <Button type="submit" className="w-full">
         Criar Reserva
       </Button>
     </form>

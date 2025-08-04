@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { Reserva, UpdateReserva } from "@/services/reservas"
 import { updateReserva } from "@/services/reservas"
+import { convertLocalToUTCString } from "@/utils/date"
 
 const editReservaSchema = z.object({
   nomeCliente: z.string().min(1, "O nome do cliente é obrigatório."),
@@ -42,7 +43,7 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
       const payload: UpdateReserva = {
         id: reserva.id,
         ...data,
-        dataReserva: new Date(data.dataReserva).toISOString(),
+        dataReserva: convertLocalToUTCString(data.dataReserva),
       }
 
       await updateReserva(reserva.id, payload)
