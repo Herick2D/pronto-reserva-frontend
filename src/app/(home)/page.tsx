@@ -1,111 +1,163 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { NewReservaForm } from "@/components/new-reserva-form"
-import { api } from "@/services/api"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
 import Image from "next/image"
+import { toast } from "react-hot-toast"
 
-type Reserva = {
-  id: string
-  nomeCliente: string
-  dataReserva: string
-  numeroPessoas: number
-  status: "Pendente" | "Confirmado" | "Cancelado"
-  observacoes?: string
+import { format, isBefore, addDays } from "date-fns"
+import { ptBR } from "date-fns/locale"
+
+import { Check, X, Pencil } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+
+import { NewReservaForm } from "@/components/new-reserva-form"
+import { EditReservaForm } from "@/components/edit-reserva-form"
+import { api } from "@/services/api"
+import { confirmarReserva, cancelarReserva, Reserva } from "@/services/reservas"
+
+const statusConfig = {
+  pendente:   { label: "Pendente",   color: "text-chart-3" },
+  confirmada: { label: "Confirmada", color: "text-chart-2" },
+  cancelada:  { label: "Cancelada",  color: "text-chart-5" },
 }
 
 export default function HomePage() {
   const [reservas, setReservas] = useState<Reserva[]>([])
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isNewReservaDialogOpen, setIsNewReservaDialogOpen] = useState(false)
+  const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)
 
   async function fetchReservas() {
-  try {
-    const response = await api.get("/api/reservas") 
-    setReservas(response.data.items)
-  } catch (err) {
-    console.error("Erro ao buscar reservas:", err)
+    try {
+      const response = await api.get("/api/reservas")
+      setReservas(response.data.items)
+    } catch (err) {
+      console.error("Erro ao buscar reservas:", err)
+      toast.error("Falha ao carregar as reservas.")
+    }
   }
-}
 
   useEffect(() => {
     fetchReservas()
   }, [])
 
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "Pendente":
-        return "text-yellow-500"
-      case "Confirmado":
-        return "text-green-500"
-      case "Cancelado":
-        return "text-red-500"
-      default:
-        return "text-gray-500"
+  async function handleConfirmReserva(id: string) {
+    try {
+      await confirmarReserva(id)
+      toast.success("Reserva confirmada!")
+      fetchReservas()
+    } catch (error) {
+      toast.error("Não foi possível confirmar a reserva.")
     }
+  }
+
+  async function handleCancelReserva(id: string) {
+    try {
+      await cancelarReserva(id)
+      toast.success("Reserva cancelada.")
+      fetchReservas()
+    } catch (error) {
+      toast.error("Não foi possível cancelar a reserva.")
+    }
+  }
+
+  function isReservaEditable(dataReserva: string): boolean {
+    const dataDaReserva = new Date(dataReserva)
+    const seteDiasAntes = addDays(dataDaReserva, -7)
+    return isBefore(new Date(), seteDiasAntes)
+  }
+
+  function handleEditSuccess() {
+    setEditingReserva(null)
+    fetchReservas()
   }
 
   return (
     <main className="p-6 md:p-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Minhas Reservas</h1>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isNewReservaDialogOpen} onOpenChange={setIsNewReservaDialogOpen}>
           <DialogTrigger asChild>
             <Button className="text-xl px-4 py-2">+</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Nova Reserva</DialogTitle>
+              <DialogDescription>
+                Preencha os detalhes da nova reserva.
+              </DialogDescription>
             </DialogHeader>
             <NewReservaForm
               onSuccess={() => {
                 fetchReservas()
-                setIsDialogOpen(false)
+                setIsNewReservaDialogOpen(false)
               }}
             />
           </DialogContent>
         </Dialog>
       </div>
 
+      <Dialog open={!!editingReserva} onOpenChange={() => setEditingReserva(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Reserva</DialogTitle>
+            <DialogDescription>
+              Altere os dados da sua reserva. Clique em "Salvar Alterações" quando terminar.
+            </DialogDescription>
+          </DialogHeader>
+          {editingReserva && (
+            <EditReservaForm 
+              reserva={editingReserva}
+              onSuccess={handleEditSuccess}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       {reservas.length === 0 ? (
         <div className="flex flex-col items-center justify-center mt-20 text-center">
-          <Image
-            src="/assets/nothing_here.svg"
-            alt="Sem reservas"
-            width={300}
-            height={300}
-            className="mb-4"
-          />
-          <p className="text-lg text-muted-foreground">
-            As coisas estão meio vazias por aqui...
-          </p>
+          <Image src="/assets/nothing_here.svg" alt="Sem reservas" width={300} height={300} className="mb-4" />
+          <p className="text-lg text-muted-foreground">As coisas estão meio vazias por aqui...</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {reservas.map((r) => (
-            <Card key={r.id}>
-              <CardHeader>
-                <CardTitle>{r.nomeCliente}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  {format(new Date(r.dataReserva), "dd 'de' MMMM 'de' yyyy, HH:mm", {
-                    locale: ptBR,
-                  })}
-                </p>
-                <p className="text-sm">Pessoas: {r.numeroPessoas}</p>
-                {r.observacoes && <p className="text-sm italic">"{r.observacoes}"</p>}
-                <p className={`text-sm font-semibold ${getStatusColor(r.status)}`}>
-                  Status: {r.status}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+          {reservas.map((r) => {
+            const editable = isReservaEditable(r.dataReserva)
+            const statusInfo = statusConfig[r.status.toLowerCase() as keyof typeof statusConfig] || { label: r.status, color: "text-gray-500" };
+            
+            return (
+              <Card key={r.id}>
+                <CardHeader>
+                  <CardTitle>{r.nomeCliente}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {format(new Date(r.dataReserva), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
+                  </p>
+                  <p className="text-sm">Pessoas: {r.numeroPessoas}</p>
+                  {r.observacoes && <p className="text-sm italic">"{r.observacoes}"</p>}
+                  
+                  <p className={`text-sm font-semibold ${statusInfo.color}`}>
+                    Status: {statusInfo.label}
+                  </p>
+                </CardContent>
+
+                <CardFooter className="flex justify-end gap-2">
+                  <Button size="icon" variant="outline" onClick={() => handleConfirmReserva(r.id)} disabled={r.status.toLowerCase() === 'confirmada'} title="Confirmar Reserva">
+                    <Check className={`h-4 w-4 text-chart-2`} />
+                  </Button>
+                  <Button size="icon" variant="outline" onClick={() => handleCancelReserva(r.id)} disabled={r.status.toLowerCase() === 'cancelada'} title="Cancelar Reserva">
+                    <X className={`h-4 w-4 text-chart-5`} />
+                  </Button>
+                  <Button size="icon" variant="outline" onClick={() => setEditingReserva(r)} disabled={!editable} title={editable ? "Editar Reserva" : "Edição não permitida (menos de 7 dias de antecedência)"}>
+                    <Pencil className={`h-4 w-4 ${!editable && 'text-muted-foreground'}`} />
+                  </Button>
+                </CardFooter>
+              </Card>
+            )
+          })}
         </div>
       )}
     </main>
