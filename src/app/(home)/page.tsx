@@ -7,7 +7,8 @@ import { toast } from "react-hot-toast"
 import { format, isBefore, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
-import { Check, X, Pencil } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { Check, X, Pencil, Plus, LogOut } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
@@ -17,6 +18,7 @@ import { NewReservaForm } from "@/components/new-reserva-form"
 import { EditReservaForm } from "@/components/edit-reserva-form"
 import { api } from "@/services/api"
 import { confirmarReserva, cancelarReserva, Reserva } from "@/services/reservas"
+import { withAuth } from "@/components/withAuth" // Importe o HOC de proteção
 
 const statusConfig = {
   pendente:   { label: "Pendente",   color: "text-chart-3" },
@@ -24,7 +26,9 @@ const statusConfig = {
   cancelada:  { label: "Cancelada",  color: "text-chart-5" },
 }
 
-export default function HomePage() {
+function HomePage() {
+  const { user, logout } = useAuth();
+
   const [reservas, setReservas] = useState<Reserva[]>([])
   const [isNewReservaDialogOpen, setIsNewReservaDialogOpen] = useState(false)
   const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)
@@ -76,28 +80,40 @@ export default function HomePage() {
 
   return (
     <main className="p-6 md:p-10">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Minhas Reservas</h1>
-        <Dialog open={isNewReservaDialogOpen} onOpenChange={setIsNewReservaDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="text-xl px-4 py-2">+</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Nova Reserva</DialogTitle>
-              <DialogDescription>
-                Preencha os detalhes da nova reserva.
-              </DialogDescription>
-            </DialogHeader>
-            <NewReservaForm
-              onSuccess={() => {
-                fetchReservas()
-                setIsNewReservaDialogOpen(false)
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
+      <header className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b">
+        <div>
+          <h1 className="text-2xl font-semibold">Minhas Reservas</h1>
+          {user && <span className="text-sm text-muted-foreground">Bem-vindo, {user.email}</span>}
+        </div>
+        <div className="flex items-center gap-2">
+          <Dialog open={isNewReservaDialogOpen} onOpenChange={setIsNewReservaDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nova Reserva
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Nova Reserva</DialogTitle>
+                <DialogDescription>
+                  Preencha os detalhes da nova reserva.
+                </DialogDescription>
+              </DialogHeader>
+              <NewReservaForm
+                onSuccess={() => {
+                  fetchReservas()
+                  setIsNewReservaDialogOpen(false)
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+
+          <Button variant="outline" size="icon" onClick={logout} title="Sair">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </header>
 
       <Dialog open={!!editingReserva} onOpenChange={() => setEditingReserva(null)}>
         <DialogContent>
@@ -115,7 +131,7 @@ export default function HomePage() {
           )}
         </DialogContent>
       </Dialog>
-
+      
       {reservas.length === 0 ? (
         <div className="flex flex-col items-center justify-center mt-20 text-center">
           <Image src="/assets/nothing_here.svg" alt="Sem reservas" width={300} height={300} className="mb-4" />
@@ -138,12 +154,11 @@ export default function HomePage() {
                   </p>
                   <p className="text-sm">Pessoas: {r.numeroPessoas}</p>
                   {r.observacoes && <p className="text-sm italic">"{r.observacoes}"</p>}
-                  
                   <p className={`text-sm font-semibold ${statusInfo.color}`}>
                     Status: {statusInfo.label}
                   </p>
                 </CardContent>
-
+                
                 <CardFooter className="flex justify-end gap-2">
                   <Button size="icon" variant="outline" onClick={() => handleConfirmReserva(r.id)} disabled={r.status.toLowerCase() === 'confirmada'} title="Confirmar Reserva">
                     <Check className={`h-4 w-4 text-chart-2`} />
@@ -163,3 +178,5 @@ export default function HomePage() {
     </main>
   )
 }
+
+export default withAuth(HomePage);

@@ -1,5 +1,3 @@
-// Em src/contexts/AuthContext.tsx
-
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -54,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Failed to process token on load:', error);
+      console.error('Falha ao processar o token ao carregar a página:', error);
       Cookies.remove('token');
     } finally {
       setIsLoading(false);
@@ -72,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       router.push('/');
     } catch (error) {
-      console.error('Failed to process token on login:', error);
+      console.error('Falha ao processar o token durante o login:', error);
       logout();
     }
   };
@@ -103,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth deve ser utilizado dentro de um AuthProvider');
   }
   return context;
 };
