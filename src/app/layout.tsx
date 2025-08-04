@@ -1,6 +1,7 @@
 import './globals.css';
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata = {
   title: 'Pronto Reserva',
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className="min-h-screen bg-background text-foreground transition-colors duration-300">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster
           position="top-right"
           toastOptions={{

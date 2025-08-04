@@ -5,26 +5,15 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "react-hot-toast"
 import { cn } from "@/lib/utils"
+
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useRouter } from "next/navigation"
-import Cookies from "js-cookie"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form"
-import { login } from '@/services/auth'
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+
+import { useAuth } from '@/contexts/AuthContext';
+import { login as loginService } from '@/services/auth';
 
 const loginSchema = z.object({
   email: z.string().email("Formato de e-mail inválido"),
@@ -36,7 +25,8 @@ export function LoginForm({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  const router = useRouter()
+
+  const { login } = useAuth();
 
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -44,14 +34,17 @@ export function LoginForm({
   })
 
   async function onSubmit(data: LoginData) {
-  try {
-    const res = await login(data)
-    Cookies.set('token', res.token, { expires: 1, path: '/' })
-    toast.success('Login efetuado com sucesso!')
-  } catch (err: any) {
-    toast.error(`Falha no login: ${err.message}`)
+    try {
+      const res = await loginService(data);
+
+      login(res.token);
+      
+      toast.success('Login efetuado com sucesso!');
+
+    } catch (err: any) {
+      toast.error(`Falha no login: ${err.message}`);
+    }
   }
-}
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
