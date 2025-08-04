@@ -11,6 +11,7 @@ import { toast } from "react-hot-toast"
 import { createReserva } from "@/services/reservas"
 import { SubmitHandler } from "react-hook-form"
 import { convertLocalToUTCString } from "@/utils/date"
+import { handleApiError } from "@/utils/handleApiError"
 
 const schema = z.object({
   nomeCliente: z.string().min(3, "Nome muito curto"),
@@ -35,6 +36,8 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
     formState: { errors }, 
     reset 
   } = useForm<FormData>({
+    //tipagem conflituosa com o zodResolver, solução para ignorar o erro e buildar.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any),
   })
 
@@ -49,8 +52,9 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
       toast.success("Reserva criada com sucesso!")
       reset()
       onSuccess()
-    } catch (err: any) {
-      toast.error("Erro ao criar reserva: " + err.message)
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      toast.error(errorMessage);
     }
   }
 

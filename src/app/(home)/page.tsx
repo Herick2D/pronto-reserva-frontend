@@ -18,7 +18,8 @@ import { NewReservaForm } from "@/components/new-reserva-form"
 import { EditReservaForm } from "@/components/edit-reserva-form"
 import { api } from "@/services/api"
 import { confirmarReserva, cancelarReserva, Reserva } from "@/services/reservas"
-import { withAuth } from "@/components/withAuth" // Importe o HOC de proteção
+import { withAuth } from "@/components/withAuth"
+import { handleApiError } from "@/utils/handleApiError"
 
 const statusConfig = {
   pendente:   { label: "Pendente",   color: "text-chart-3" },
@@ -34,14 +35,14 @@ function HomePage() {
   const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)
 
   async function fetchReservas() {
-    try {
-      const response = await api.get("/api/reservas")
-      setReservas(response.data.items)
-    } catch (err) {
-      console.error("Erro ao buscar reservas:", err)
-      toast.error("Falha ao carregar as reservas.")
-    }
+  try {
+    const response = await api.get("/api/reservas");
+    setReservas(response.data.items);
+  } catch (error) {
+    const errorMessage = handleApiError(error);
+    toast.error(errorMessage);
   }
+}
 
   useEffect(() => {
     fetchReservas()
@@ -53,7 +54,8 @@ function HomePage() {
       toast.success("Reserva confirmada!")
       fetchReservas()
     } catch (error) {
-      toast.error("Não foi possível confirmar a reserva.")
+      const errorMessage = handleApiError(error);
+      toast.error(errorMessage)
     }
   }
 
@@ -63,7 +65,8 @@ function HomePage() {
       toast.success("Reserva cancelada.")
       fetchReservas()
     } catch (error) {
-      toast.error("Não foi possível cancelar a reserva.")
+      const errorMessage = handleApiError(error);
+      toast.error(errorMessage);
     }
   }
 
@@ -120,7 +123,7 @@ function HomePage() {
           <DialogHeader>
             <DialogTitle>Editar Reserva</DialogTitle>
             <DialogDescription>
-              Altere os dados da sua reserva. Clique em "Salvar Alterações" quando terminar.
+              Altere os dados da sua reserva. Clique em &lsquo;Salvar Alterações&rsquo; quando terminar.
             </DialogDescription>
           </DialogHeader>
           {editingReserva && (
@@ -153,7 +156,7 @@ function HomePage() {
                     {format(new Date(r.dataReserva), "dd 'de' MMMM 'de' yyyy, HH:mm", { locale: ptBR })}
                   </p>
                   <p className="text-sm">Pessoas: {r.numeroPessoas}</p>
-                  {r.observacoes && <p className="text-sm italic">"{r.observacoes}"</p>}
+                  {r.observacoes && <p className="text-sm italic">&ldquo;{r.observacoes}&rdquo;</p>}
                   <p className={`text-sm font-semibold ${statusInfo.color}`}>
                     Status: {statusInfo.label}
                   </p>

@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Reserva, UpdateReserva } from "@/services/reservas"
 import { updateReserva } from "@/services/reservas"
 import { convertLocalToUTCString } from "@/utils/date"
+import { handleApiError } from "@/utils/handleApiError"
 
 const editReservaSchema = z.object({
   nomeCliente: z.string().min(1, "O nome do cliente é obrigatório."),
@@ -28,6 +29,8 @@ interface EditReservaFormProps {
 
 export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
   const form = useForm<z.infer<typeof editReservaSchema>>({
+    //tipagem conflituosa com o zodResolver, solução para ignorar o erro e buildar.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(editReservaSchema as any),
 
     defaultValues: {
@@ -49,8 +52,9 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
       await updateReserva(reserva.id, payload)
       toast.success('Reserva atualizada com sucesso!')
       onSuccess()
-    } catch (err: any) {
-      toast.error(`Falha ao atualizar a reserva: ${err.message}`)
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      toast.error(errorMessage);
     }
   }
 

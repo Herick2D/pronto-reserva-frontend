@@ -14,6 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 
 import { useAuth } from '@/contexts/AuthContext';
 import { login as loginService } from '@/services/auth';
+import { handleApiError } from '@/utils/handleApiError';
 
 const loginSchema = z.object({
   email: z.string().email("Formato de e-mail inválido"),
@@ -36,13 +37,12 @@ export function LoginForm({
   async function onSubmit(data: LoginData) {
     try {
       const res = await loginService(data);
-
       login(res.token);
-      
       toast.success('Login efetuado com sucesso!');
 
-    } catch (err: any) {
-      toast.error(`Falha no login: ${err.message}`);
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      toast.error(errorMessage);
     }
   }
 
