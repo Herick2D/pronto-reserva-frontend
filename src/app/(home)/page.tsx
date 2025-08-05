@@ -35,14 +35,14 @@ function HomePage() {
   const [editingReserva, setEditingReserva] = useState<Reserva | null>(null)
 
   async function fetchReservas() {
-  try {
-    const response = await api.get("/api/reservas");
-    setReservas(response.data.items);
-  } catch (error) {
-    const errorMessage = handleApiError(error);
-    toast.error(errorMessage);
+    try {
+      const response = await api.get("/api/reservas");
+      setReservas(response.data.items);
+    } catch (error) {
+      const errorMessage = handleApiError(error);
+      toast.error(errorMessage);
+    }
   }
-}
 
   useEffect(() => {
     fetchReservas()
@@ -91,7 +91,7 @@ function HomePage() {
         <div className="flex items-center gap-2">
           <Dialog open={isNewReservaDialogOpen} onOpenChange={setIsNewReservaDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button data-cy="open-new-reserva-modal">
                 <Plus className="mr-2 h-4 w-4" />
                 Nova Reserva
               </Button>
@@ -147,7 +147,7 @@ function HomePage() {
             const statusInfo = statusConfig[r.status.toLowerCase() as keyof typeof statusConfig] || { label: r.status, color: "text-gray-500" };
             
             return (
-              <Card key={r.id}>
+              <Card key={r.id} className="card">
                 <CardHeader>
                   <CardTitle>{r.nomeCliente}</CardTitle>
                 </CardHeader>
@@ -163,13 +163,13 @@ function HomePage() {
                 </CardContent>
                 
                 <CardFooter className="flex justify-end gap-2">
-                  <Button size="icon" variant="outline" onClick={() => handleConfirmReserva(r.id)} disabled={r.status.toLowerCase() === 'confirmada'} title="Confirmar Reserva">
+                  <Button size="icon" variant="outline" onClick={() => handleConfirmReserva(r.id)} disabled={r.status.toLowerCase() === 'confirmada'} title="Confirmar Reserva" data-cy={`confirm-button-${r.id}`}>
                     <Check className={`h-4 w-4 text-chart-2`} />
                   </Button>
-                  <Button size="icon" variant="outline" onClick={() => handleCancelReserva(r.id)} disabled={r.status.toLowerCase() === 'cancelada'} title="Cancelar Reserva">
+                  <Button size="icon" variant="outline" onClick={() => handleCancelReserva(r.id)} disabled={r.status.toLowerCase() === 'cancelada'} title="Cancelar Reserva" data-cy={`cancel-button-${r.id}`}>
                     <X className={`h-4 w-4 text-chart-5`} />
                   </Button>
-                  <Button size="icon" variant="outline" onClick={() => setEditingReserva(r)} disabled={!editable} title={editable ? "Editar Reserva" : "Edição não permitida (menos de 7 dias de antecedência)"}>
+                  <Button size="icon" variant="outline" onClick={() => setEditingReserva(r)} disabled={!editable} title={editable ? "Editar Reserva" : "Edição não permitida (menos de 7 dias de antecedência)"} data-cy={`edit-button-${r.id}`}>
                     <Pencil className={`h-4 w-4 ${!editable && 'text-muted-foreground'}`} />
                   </Button>
                 </CardFooter>

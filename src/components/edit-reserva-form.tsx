@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
-import { Reserva, UpdateReserva } from "@/services/reservas"
-import { updateReserva } from "@/services/reservas"
+import { Reserva, UpdateReserva, updateReserva } from "@/services/reservas"
 import { convertLocalToUTCString } from "@/utils/date"
 import { handleApiError } from "@/utils/handleApiError"
 
@@ -22,17 +21,17 @@ const editReservaSchema = z.object({
   observacoes: z.string().optional(),
 })
 
+type EditReservaFormData = z.infer<typeof editReservaSchema>;
+
 interface EditReservaFormProps {
   reserva: Reserva
   onSuccess: () => void
 }
 
 export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
-  const form = useForm<z.infer<typeof editReservaSchema>>({
-    //tipagem conflituosa com o zodResolver, solução para ignorar o erro e buildar.
+  const form = useForm<EditReservaFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(editReservaSchema as any),
-
     defaultValues: {
       nomeCliente: reserva.nomeCliente,
       dataReserva: format(new Date(reserva.dataReserva), "yyyy-MM-dd'T'HH:mm"),
@@ -41,7 +40,7 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
     },
   })
 
-  async function onSubmit(data: z.infer<typeof editReservaSchema>) {
+  async function onSubmit(data: EditReservaFormData) {
     try {
       const payload: UpdateReserva = {
         id: reserva.id,
@@ -68,7 +67,7 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
             <FormItem>
               <Label htmlFor="nomeCliente">Nome do Cliente</Label>
               <FormControl>
-                <Input id="nomeCliente" {...field} />
+                <Input id="nomeCliente" {...field} data-cy="edit-reserva-nome" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,7 +80,7 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
             <FormItem>
               <Label htmlFor="dataReserva">Data e Hora</Label>
               <FormControl>
-                <Input id="dataReserva" type="datetime-local" {...field} />
+                <Input id="dataReserva" type="datetime-local" {...field} data-cy="edit-reserva-data" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -94,7 +93,7 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
             <FormItem>
               <Label htmlFor="numeroPessoas">Número de Pessoas</Label>
               <FormControl>
-                <Input id="numeroPessoas" type="number" {...field} />
+                <Input id="numeroPessoas" type="number" {...field} data-cy="edit-reserva-pessoas" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -107,13 +106,13 @@ export function EditReservaForm({ reserva, onSuccess }: EditReservaFormProps) {
             <FormItem>
               <Label htmlFor="observacoes">Observações (opcional)</Label>
               <FormControl>
-                <Input id="observacoes" {...field} />
+                <Input id="observacoes" {...field} data-cy="edit-reserva-observacoes" />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting} data-cy="edit-reserva-submit">
           {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
         </Button>
       </form>

@@ -37,14 +37,15 @@ export function RegisterForm({ className, ...props }: React.HTMLAttributes<HTMLD
 
   async function onSubmit(data: RegisterData) {
     try {
-      const res = await registerUser(data);
-      login(res.token);
-      toast.success('Conta criada com sucesso! Você já está logado.');
+      await registerUser(data);
+
+      toast.success('Conta criada com sucesso! Por favor, faça o login.');
+      form.reset();
+
     } catch (error) {   
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         return toast.error("Este e-mail já está cadastrado.");
       }
-
       const errorMessage = handleApiError(error);
       toast.error(errorMessage);
     }
@@ -67,7 +68,7 @@ export function RegisterForm({ className, ...props }: React.HTMLAttributes<HTMLD
                   <FormItem>
                     <Label htmlFor="email">E-mail</Label>
                     <FormControl>
-                      <Input id="email" placeholder="seu@email.com" {...field} />
+                      <Input id="email" data-cy="register-email" placeholder="seu@email.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -83,6 +84,7 @@ export function RegisterForm({ className, ...props }: React.HTMLAttributes<HTMLD
                       <Input
                         id="password"
                         type="password"
+                        data-cy="register-password"
                         placeholder="••••••••"
                         {...field}
                       />
@@ -91,7 +93,7 @@ export function RegisterForm({ className, ...props }: React.HTMLAttributes<HTMLD
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" data-cy="register-submit">
                 Cadastrar
               </Button>
             </form>

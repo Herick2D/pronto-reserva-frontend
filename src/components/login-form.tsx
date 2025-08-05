@@ -70,6 +70,7 @@ export function LoginForm({
                     <FormControl>
                       <Input
                         id="email"
+                        data-cy="login-email"
                         type="email"
                         placeholder="seu@email.com"
                         {...field}
@@ -97,6 +98,7 @@ export function LoginForm({
                     <FormControl>
                       <Input
                         id="password"
+                        data-cy="login-password"
                         type="password"
                         placeholder="••••••••"
                         {...field}
@@ -107,7 +109,7 @@ export function LoginForm({
                 )}
               />
 
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" data-cy="login-submit">
                 Entrar
               </Button>
 

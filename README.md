@@ -24,6 +24,7 @@ Este é o frontend da aplicação Pronta-Reserva, desenvolvido para gerenciar e 
 - **[React Hook Form](https://react-hook-form.com/)** - Gerenciamento de formulários.
 - **[date-fns](https://date-fns.org/)** - Biblioteca para manipulação de datas.
 - **[Lucide React](https://lucide.dev/)** - Biblioteca de ícones.
+- **[Cypress](https://www.cypress.io/)** - Ferramenta para testes End-to-End (E2E).
 
 ## Como Executar o Projeto
 
@@ -59,6 +60,26 @@ Siga os passos abaixo para rodar a aplicação em seu ambiente local.
         npm run dev
     ```
 
+
+## Rodando os Testes
+
+Este projeto utiliza **Cypress** para testes End-to-End (E2E), que simulam o fluxo completo do usuário.
+
+### Rodar testes em modo interativo (para desenvolver)
+
+Este comando abre a interface gráfica do Cypress, onde você pode ver os testes rodando em tempo real.
+
+```bash
+npm run test:e2e:open
+```
+
+### Rodar testes em modo headless (para verificação)
+
+Este comando executa todos os testes no terminal, sem abrir um navegador. É ideal para automação e para uma verificação rápida de que tudo está funcionando.
+
+```bash
+npm run test:e2e:run
+```
 
 ## Observações:
 Este projeto foi desenvolvido dentro de prazos de entrega pré-estabelecidos e com objetivos avaliativos definidos. As escolhas de tecnologias e as metodologias de trabalho seguiram tanto as diretrizes do enunciado quanto critérios pessoais de eficiência e familiaridade.

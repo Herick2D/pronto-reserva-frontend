@@ -61,7 +61,7 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div>
-        <Label htmlFor="nomeCliente">Nome</Label>
+        <Label htmlFor="nomeCliente" data-cy="new-reserva-nome">Nome</Label>
         <Input 
           id="nomeCliente" 
           {...register("nomeCliente")} 
@@ -73,7 +73,7 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <Label htmlFor="dataReserva">Data e Hora</Label>
+        <Label htmlFor="dataReserva" data-cy="new-reserva-data">Data e Hora</Label>
         <Input 
           id="dataReserva" 
           type="datetime-local" 
@@ -85,7 +85,7 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
 
       <div>
-        <Label htmlFor="numeroPessoas">Número de Pessoas</Label>
+        <Label htmlFor="numeroPessoas" data-cy="new-reserva-pessoas">Número de Pessoas</Label>
         <Input 
           id="numeroPessoas" 
           type="number" 
@@ -107,7 +107,7 @@ export function NewReservaForm({ onSuccess }: { onSuccess: () => void }) {
         />
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" data-cy="new-reserva-submit" className="w-full">
         Criar Reserva
       </Button>
     </form>
